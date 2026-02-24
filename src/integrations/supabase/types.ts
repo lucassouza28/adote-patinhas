@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      animais: {
+        Row: {
+          created_at: string
+          descricao: string
+          especie: string
+          foto_url: string
+          id: string
+          idade: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          especie: string
+          foto_url: string
+          id?: string
+          idade: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          especie?: string
+          foto_url?: string
+          id?: string
+          idade?: string
+          nome?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
