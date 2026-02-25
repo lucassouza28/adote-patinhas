@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Heart, Info, HandHeart, PawPrint } from "lucide-react";
+import { Heart, Info, HandHeart, PawPrint, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AppDrawerProps {
   open: boolean;
@@ -8,6 +9,7 @@ interface AppDrawerProps {
 }
 
 const AppDrawer = ({ open, onOpenChange, onNavigate }: AppDrawerProps) => {
+  const navigate = useNavigate();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-72 bg-sidebar border-sidebar-border p-0">
@@ -37,6 +39,16 @@ const AppDrawer = ({ open, onOpenChange, onNavigate }: AppDrawerProps) => {
           >
             <HandHeart className="h-5 w-5 text-primary" />
             <span className="font-semibold">Ajude-nos</span>
+          </button>
+
+          <div className="border-t border-sidebar-border my-2" />
+
+          <button
+            onClick={() => { navigate("/login"); onOpenChange(false); }}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+          >
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Painel Admin</span>
           </button>
         </nav>
 
