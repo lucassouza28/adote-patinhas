@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { PawPrint, Plus, Pencil, Trash2, LogOut } from "lucide-react";
+import { PawPrint, Plus, Pencil, Trash2, LogOut, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AnimalDB {
@@ -23,6 +23,7 @@ interface AnimalDB {
 }
 
 const emptyAnimal = { nome: "", especie: "", idade: "", descricao: "", foto_url: "" };
+const STORAGE_BUCKET = "animais-fotos";
 
 const AdminPage = () => {
   const [animais, setAnimais] = useState<AnimalDB[]>([]);
@@ -30,6 +31,8 @@ const AdminPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyAnimal);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,6 +77,8 @@ const AdminPage = () => {
   const openNew = () => {
     setEditingId(null);
     setForm(emptyAnimal);
+    setFotoFile(null);
+    setFotoPreview(null);
     setDialogOpen(true);
   };
 
@@ -86,7 +91,36 @@ const AdminPage = () => {
       descricao: animal.descricao,
       foto_url: animal.foto_url,
     });
+    setFotoFile(null);
+    setFotoPreview(animal.foto_url);
     setDialogOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 5MB.", variant: "destructive" });
+      return;
+    }
+    setFotoFile(file);
+    setFotoPreview(URL.createObjectURL(file));
+  };
+
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(fileName, file);
+    if (error) {
+      toast({ title: "Erro no upload", description: error.message, variant: "destructive" });
+      return null;
+    }
+    const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
+    return data.publicUrl;
   };
 
   const animalSchema = z.object({
@@ -94,26 +128,40 @@ const AdminPage = () => {
     especie: z.string().trim().min(1, "Espécie é obrigatória").max(50, "Espécie deve ter no máximo 50 caracteres"),
     idade: z.string().trim().min(1, "Idade é obrigatória").max(50, "Idade deve ter no máximo 50 caracteres"),
     descricao: z.string().trim().min(1, "Descrição é obrigatória").max(500, "Descrição deve ter no máximo 500 caracteres"),
-    foto_url: z.string().url("URL da foto inválida").max(500, "URL deve ter no máximo 500 caracteres"),
+    foto_url: z.string().max(500).optional(),
   });
 
   const handleSave = async () => {
+    // For new animals, require a photo file
+    if (!editingId && !fotoFile) {
+      toast({ title: "Erro de validação", description: "Selecione uma foto para o animal.", variant: "destructive" });
+      return;
+    }
     const validation = animalSchema.safeParse(form);
     if (!validation.success) {
       toast({ title: "Erro de validação", description: validation.error.errors[0].message, variant: "destructive" });
       return;
     }
     setSaving(true);
-    const validatedData = validation.data as { nome: string; especie: string; idade: string; descricao: string; foto_url: string };
+
+    let fotoUrl = form.foto_url;
+    if (fotoFile) {
+      const uploaded = await uploadPhoto(fotoFile);
+      if (!uploaded) { setSaving(false); return; }
+      fotoUrl = uploaded;
+    }
+
+    const saveData = { nome: validation.data.nome, especie: validation.data.especie, idade: validation.data.idade, descricao: validation.data.descricao, foto_url: fotoUrl };
+
     if (editingId) {
-      const { error } = await supabase.from("animais").update(validatedData).eq("id", editingId);
+      const { error } = await supabase.from("animais").update(saveData).eq("id", editingId);
       if (error) {
         toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Animal atualizado com sucesso!" });
       }
     } else {
-      const { error } = await supabase.from("animais").insert([validatedData]);
+      const { error } = await supabase.from("animais").insert([saveData]);
       if (error) {
         toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
       } else {
@@ -226,8 +274,17 @@ const AdminPage = () => {
               <Input value={form.idade} onChange={(e) => setForm({ ...form, idade: e.target.value })} placeholder="Ex: 2 anos" />
             </div>
             <div className="space-y-2">
-              <Label>URL da Foto</Label>
-              <Input value={form.foto_url} onChange={(e) => setForm({ ...form, foto_url: e.target.value })} placeholder="https://..." />
+              <Label>Foto do Animal</Label>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer border border-input rounded-md px-4 py-2 hover:bg-accent transition-colors">
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{fotoFile ? fotoFile.name : "Selecionar foto..."}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                </label>
+                {fotoPreview && (
+                  <img src={fotoPreview} alt="Preview" className="h-32 w-32 object-cover rounded-md border" />
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Descrição</Label>
@@ -236,7 +293,7 @@ const AdminPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving || !form.nome || !form.especie || !form.idade || !form.descricao || !form.foto_url}>
+            <Button onClick={handleSave} disabled={saving || !form.nome || !form.especie || !form.idade || !form.descricao || (!form.foto_url && !fotoFile)}>
               {saving ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
