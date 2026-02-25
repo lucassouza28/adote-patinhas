@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,17 +89,31 @@ const AdminPage = () => {
     setDialogOpen(true);
   };
 
+  const animalSchema = z.object({
+    nome: z.string().trim().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
+    especie: z.string().trim().min(1, "Espécie é obrigatória").max(50, "Espécie deve ter no máximo 50 caracteres"),
+    idade: z.string().trim().min(1, "Idade é obrigatória").max(50, "Idade deve ter no máximo 50 caracteres"),
+    descricao: z.string().trim().min(1, "Descrição é obrigatória").max(500, "Descrição deve ter no máximo 500 caracteres"),
+    foto_url: z.string().url("URL da foto inválida").max(500, "URL deve ter no máximo 500 caracteres"),
+  });
+
   const handleSave = async () => {
+    const validation = animalSchema.safeParse(form);
+    if (!validation.success) {
+      toast({ title: "Erro de validação", description: validation.error.errors[0].message, variant: "destructive" });
+      return;
+    }
     setSaving(true);
+    const validatedData = validation.data as { nome: string; especie: string; idade: string; descricao: string; foto_url: string };
     if (editingId) {
-      const { error } = await supabase.from("animais").update(form).eq("id", editingId);
+      const { error } = await supabase.from("animais").update(validatedData).eq("id", editingId);
       if (error) {
         toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Animal atualizado com sucesso!" });
       }
     } else {
-      const { error } = await supabase.from("animais").insert(form);
+      const { error } = await supabase.from("animais").insert([validatedData]);
       if (error) {
         toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
       } else {
