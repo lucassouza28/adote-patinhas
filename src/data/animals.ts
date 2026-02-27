@@ -10,6 +10,7 @@ export interface Animal {
   nome: string;
   especie: string;
   idade: string;
+  porte?: string;
   descricao: string;
   foto: string;
 }

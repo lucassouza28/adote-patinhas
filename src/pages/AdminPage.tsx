@@ -17,12 +17,13 @@ interface AnimalDB {
   nome: string;
   especie: string;
   idade: string;
+  porte?: string;
   descricao: string;
   foto_url: string;
   created_at: string;
 }
 
-const emptyAnimal = { nome: "", especie: "", idade: "", descricao: "", foto_url: "" };
+const emptyAnimal = { nome: "", especie: "", idade: "", porte: "", descricao: "", foto_url: "" };
 const STORAGE_BUCKET = "animais-fotos";
 
 const AdminPage = () => {
@@ -88,6 +89,7 @@ const AdminPage = () => {
       nome: animal.nome,
       especie: animal.especie,
       idade: animal.idade,
+      porte: animal.porte || "",
       descricao: animal.descricao,
       foto_url: animal.foto_url,
     });
@@ -127,6 +129,7 @@ const AdminPage = () => {
     nome: z.string().trim().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
     especie: z.string().trim().min(1, "Espécie é obrigatória").max(50, "Espécie deve ter no máximo 50 caracteres"),
     idade: z.string().trim().min(1, "Idade é obrigatória").max(50, "Idade deve ter no máximo 50 caracteres"),
+    porte: z.string().trim().optional(),
     descricao: z.string().trim().min(1, "Descrição é obrigatória").max(500, "Descrição deve ter no máximo 500 caracteres"),
     foto_url: z.string().max(500).optional(),
   });
@@ -151,7 +154,7 @@ const AdminPage = () => {
       fotoUrl = uploaded;
     }
 
-    const saveData = { nome: validation.data.nome, especie: validation.data.especie, idade: validation.data.idade, descricao: validation.data.descricao, foto_url: fotoUrl };
+    const saveData = { nome: validation.data.nome, especie: validation.data.especie, idade: validation.data.idade, porte: validation.data.porte, descricao: validation.data.descricao, foto_url: fotoUrl };
 
     if (editingId) {
       const { error } = await supabase.from("animais").update(saveData).eq("id", editingId);
@@ -221,6 +224,7 @@ const AdminPage = () => {
                       <TableHead>Nome</TableHead>
                       <TableHead>Espécie</TableHead>
                       <TableHead>Idade</TableHead>
+                      <TableHead>Porte</TableHead>
                       <TableHead className="hidden md:table-cell">Descrição</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
@@ -231,6 +235,7 @@ const AdminPage = () => {
                         <TableCell className="font-medium">{animal.nome}</TableCell>
                         <TableCell>{animal.especie}</TableCell>
                         <TableCell>{animal.idade}</TableCell>
+                        <TableCell>{animal.porte || "-"}</TableCell>
                         <TableCell className="hidden md:table-cell max-w-xs truncate">{animal.descricao}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
@@ -254,7 +259,7 @@ const AdminPage = () => {
 
       {/* Dialog for Create/Edit */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading">
               {editingId ? "Editar Animal" : "Novo Animal"}
@@ -272,6 +277,10 @@ const AdminPage = () => {
             <div className="space-y-2">
               <Label>Idade</Label>
               <Input value={form.idade} onChange={(e) => setForm({ ...form, idade: e.target.value })} placeholder="Ex: 2 anos" />
+            </div>
+            <div className="space-y-2">
+              <Label>Porte</Label>
+              <Input value={form.porte} onChange={(e) => setForm({ ...form, porte: e.target.value })} placeholder="Ex: Pequeno, Médio, Grande" />
             </div>
             <div className="space-y-2">
               <Label>Foto do Animal</Label>
