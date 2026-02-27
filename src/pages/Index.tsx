@@ -8,9 +8,10 @@ import DonationModal from "@/components/DonationModal";
 import AppDrawer from "@/components/AppDrawer";
 import SobrePage from "@/components/SobrePage";
 import AjudePage from "@/components/AjudePage";
+import ContatoPage from "@/components/ContatoPage";
 import { Input } from "@/components/ui/input";
 
-type Page = "home" | "animais" | "sobre" | "ajude";
+type Page = "home" | "animais" | "sobre" | "ajude" | "contato";
 
 const Index = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -68,6 +69,7 @@ const Index = () => {
 
   if (page === "sobre") return <SobrePage onVoltar={() => setPage("home")} />;
   if (page === "ajude") return <AjudePage onVoltar={() => setPage("home")} />;
+  if (page === "contato") return <ContatoPage onVoltar={() => setPage("home")} />;
 
   return (
     <div className="min-h-screen bg-background">
