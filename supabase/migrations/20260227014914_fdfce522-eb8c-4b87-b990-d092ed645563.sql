@@ -1,0 +1,1 @@
+DROP POLICY "Policy to implement Time To Live (TTL)" ON public.animais;

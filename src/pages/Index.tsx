@@ -39,7 +39,7 @@ const Index = () => {
           nome: d.nome,
           especie: d.especie,
           idade: d.idade,
-          porte: d.porte,
+          porte: d.porte || undefined,
           descricao: d.descricao,
           foto: d.foto_url || "",
         })));
