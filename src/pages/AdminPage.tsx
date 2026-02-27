@@ -234,7 +234,7 @@ const AdminPage = () => {
                       <TableRow key={animal.id}>
                         <TableCell className="font-medium">{animal.nome}</TableCell>
                         <TableCell>{animal.especie}</TableCell>
-                        <TableCell>{animal.idade}</TableCell>
+                        <TableCell>{animal.idade}{!/ano/i.test(animal.idade) && " anos"}</TableCell>
                         <TableCell>{animal.porte || "-"}</TableCell>
                         <TableCell className="hidden md:table-cell max-w-xs truncate">{animal.descricao}</TableCell>
                         <TableCell className="text-right">

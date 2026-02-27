@@ -24,7 +24,9 @@ const AnimalCard = ({ animal }: { animal: Animal }) => {
                 {animal.especie}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground font-medium mb-1">{animal.idade}</p>
+            <p className="text-sm text-muted-foreground font-medium mb-1">
+              {animal.idade}{!/ano/i.test(animal.idade) && " anos"}
+            </p>
             {animal.porte && (
               <p className="text-sm text-muted-foreground mb-2">
                 <span className="font-semibold">Porte:</span> {animal.porte}
