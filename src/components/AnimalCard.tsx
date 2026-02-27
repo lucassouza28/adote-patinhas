@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 
 const AnimalCard = ({ animal }: { animal: Animal }) => {
   // Você pode alterar este link para o endereço correto da página ou perfil do Facebook (Messenger)
-  const facebookChatUrl = "https://m.me/rejany.mendes.9";
+  const facebookChatUrl = "https://m.me/lucas.souzaalves.35";
 
   return (
     <div className="group bg-card rounded-lg overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 animate-fade-in flex flex-col h-full">
@@ -22,7 +22,9 @@ const AnimalCard = ({ animal }: { animal: Animal }) => {
               {animal.especie}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground font-medium mb-1">{animal.idade}</p>
+          <p className="text-sm text-muted-foreground font-medium mb-1">
+            {animal.idade}{!/ano/i.test(animal.idade) && " anos"}
+          </p>
           {animal.porte && (
             <p className="text-sm text-muted-foreground mb-2">
               <span className="font-semibold">Porte:</span> {animal.porte}

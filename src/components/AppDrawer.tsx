@@ -1,11 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Heart, Info, HandHeart, PawPrint, ShieldCheck } from "lucide-react";
+import { Heart, Info, HandHeart, PawPrint, ShieldCheck, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AppDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNavigate: (page: "sobre" | "ajude") => void;
+  onNavigate: (page: "sobre" | "ajude" | "contato") => void;
 }
 
 const AppDrawer = ({ open, onOpenChange, onNavigate }: AppDrawerProps) => {
@@ -39,6 +39,13 @@ const AppDrawer = ({ open, onOpenChange, onNavigate }: AppDrawerProps) => {
           >
             <HandHeart className="h-5 w-5 text-primary" />
             <span className="font-semibold">Ajude-nos</span>
+          </button>
+          <button
+            onClick={() => { onNavigate("contato"); onOpenChange(false); }}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+          >
+            <Phone className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Contato</span>
           </button>
 
           <div className="border-t border-sidebar-border my-2" />
