@@ -82,6 +82,16 @@ const LoginPage = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleForgot}
+              disabled={loading}
+              className="text-sm text-primary hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+          <div className="mt-2 text-center">
             <button onClick={() => navigate("/")} className="text-sm text-primary hover:underline">
               ← Voltar ao site
             </button>
