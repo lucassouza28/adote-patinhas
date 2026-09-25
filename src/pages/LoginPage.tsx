@@ -42,6 +42,23 @@ const LoginPage = () => {
     setLoading(false);
   };
 
+  const handleForgot = async () => {
+    if (!email) {
+      toast({ title: "Informe seu e-mail", description: "Digite o e-mail no campo acima.", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Não foi possível enviar", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "E-mail enviado!", description: "Confira sua caixa de entrada para redefinir a senha." });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
@@ -82,6 +99,16 @@ const LoginPage = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleForgot}
+              disabled={loading}
+              className="text-sm text-primary hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+          <div className="mt-2 text-center">
             <button onClick={() => navigate("/")} className="text-sm text-primary hover:underline">
               ← Voltar ao site
             </button>
